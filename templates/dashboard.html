@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h2>Bienvenido, {{ restaurant.name }}</h2>
+
+{% if restaurant.image %}
+  <img src="{{ restaurant.image }}" alt="Imagen del restaurante" 
+       style="max-width:300px; height:auto; border-radius:10px; margin-bottom:15px;">
+{% endif %}
+
+<p><strong>Horario:</strong> {{ restaurant.schedule }}</p>
+<p><strong>Ubicación:</strong> {{ restaurant.location }}</p>
+<p><strong>Descripción:</strong> {{ restaurant.description }}</p>
+
+<hr>
+<h3>Categorías</h3>
+<form method="POST" action="{{ url_for('main.add_category') }}">
+  <input type="text" name="category" placeholder="Nombre de la categoría" required>
+  <button type="submit">Agregar Categoría</button>
+</form>
+
+{% for category in restaurant.categories %}
+  <div class="category-box" style="border:1px solid #ddd; padding:10px; margin:10px 0; border-radius:8px;">
+    <h4>{{ category.category }}</h4>
+
+    <!-- Editar categoría -->
+    <form method="POST" action="{{ url_for('main.edit_category', category_id=category.id) }}" style="margin-bottom:5px;">
+      <input type="text" name="category" value="{{ category.category }}" required>
+      <button type="submit">Actualizar</button>
+    </form>
+
+    <!-- Eliminar categoría -->
+    <form method="POST" action="{{ url_for('main.delete_category', category_id=category.id) }}">
+      <button type="button" class="delete-btn" data-url="{{ url_for('main.delete_category', category_id=category.id) }}">
+  Eliminar
+</button>
+
+    </form>
+
+    <hr>
+
+    <!-- Agregar platillo -->
+    <form method="POST" action="{{ url_for('main.add_item', category_id=category.id) }}" enctype="multipart/form-data">
+      <input type="text" name="name" placeholder="Nombre del platillo" required>
+      <input type="number" step="0.01" name="price" placeholder="Precio" required>
+      <input type="file" name="image" accept="image/*">
+      <textarea name="description" placeholder="Descripción"></textarea>
+      <button type="submit">Agregar Platillo</button>
+    </form>
+
+    <!-- Lista de platillos -->
+    <ul>
+      {% for item in category.items %}
+        <li style="margin-top:10px;">
+          <strong>{{ item.name }}</strong> - ${{ item.price }} <br>
+          {% if item.image %}
+            <img src="{{ item.image }}" alt="{{ item.name }}" style="max-width:120px; height:auto; margin-top:5px; border-radius:6px;">
+          {% endif %}
+          <p>{{ item.description }}</p>
+
+          <!-- Editar platillo -->
+          <form method="POST" enctype="multipart/form-data" action="{{ url_for('main.edit_item', item_id=item.id) }}">
+            <input type="text" name="name" value="{{ item.name }}" required>
+            <input type="number" step="0.01" name="price" value="{{ item.price }}" required>
+            <textarea name="description">{{ item.description }}</textarea>
+            <input type="file" name="image" accept="image/*">
+            <button type="submit">Actualizar</button>
+          </form>
+
+          <!-- Eliminar platillo -->
+          <form method="POST" action="{{ url_for('main.delete_item', item_id=item.id) }}">
+            <button type="button" class="delete-btn" data-url="{{ url_for('main.delete_category', category_id=category.id) }}">
+  Eliminar
+</button>
+
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endfor %}
+
+{% endblock %}
+
+
