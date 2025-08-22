@@ -10,10 +10,8 @@ bp = Blueprint("main", __name__, template_folder="../templates")
 
 @bp.route("/")
 def index():
-    # Si ya está logueado, lo mando al dashboard
     if current_user.is_authenticated:
         return redirect(url_for("main.dashboard"))
-    # Si no, lo mando al login
     return redirect(url_for("main.login"))
 
 @bp.route("/login", methods=["GET", "POST"])
@@ -39,27 +37,22 @@ def register():
         description = request.form["description"].strip()
         file = request.files.get("image")
 
-        # ✅ Validar campos obligatorios
         if not all([name, password, schedule, location, description, file]):
             flash("Todos los campos son obligatorios (incluyendo la imagen).", "danger")
             return redirect(url_for("main.register"))
 
-        # ✅ Verificar si ya existe el restaurante
         existing_restaurant = Restaurant.query.filter_by(name=name).first()
         if existing_restaurant:
             flash("Ese nombre de restaurante ya está registrado. Intenta con otro.", "danger")
             return redirect(url_for("main.register"))
 
-        # ✅ Validar la contraseña
         import re
         if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$', password):
             flash("La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula y un número.", "danger")
             return redirect(url_for("main.register"))
 
-        # ✅ Subir imagen
         image_url = upload_image_to_supabase(file, folder="restaurants")
 
-        # ✅ Crear restaurante
         new_restaurant = Restaurant(
             name=name,
             schedule=schedule,
