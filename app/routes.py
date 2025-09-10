@@ -3,45 +3,54 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
 
 from app.utils import upload_image_to_supabase
-from .forms import RegisterForm, LoginForm
 from .models import db, Restaurant, Category, MenuItem
 
 bp = Blueprint("main", __name__, template_folder="../templates")
 
-# Página inicial -> muestra login si no hay sesión
+DASHBOARD_ROUTE = "main.dashboard"
+LOGIN_ROUTE = "main.login"
+REGISTER_ROUTE = "main.register"
+INDEX_ROUTE = "main.index"
+
+
 @bp.route("/", methods=["GET", "POST"])
 def index():
     if current_user.is_authenticated:
-        return redirect(url_for("main.dashboard"))
+        return redirect(url_for(DASHBOARD_ROUTE))
 
-    form = LoginForm()
-    if form.validate_on_submit():
-        restaurant = Restaurant.query.filter_by(name=form.name.data).first()
-        if restaurant and restaurant.check_password(form.password.data):
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        password = request.form.get("password", "").strip()
+
+        restaurant = Restaurant.query.filter_by(name=name).first()
+        if restaurant and restaurant.check_password(password):
             login_user(restaurant)
             flash("Inicio de sesión exitoso.", "success")
-            return redirect(url_for("main.dashboard"))
+            return redirect(url_for(DASHBOARD_ROUTE))
         else:
             flash("Nombre o contraseña incorrectos.", "danger")
 
-    return render_template("login.html", form=form)
+    return render_template("login.html")
 
 
 @bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for("main.dashboard"))
+        return redirect(url_for(DASHBOARD_ROUTE))
 
-    form = LoginForm()
-    if form.validate_on_submit():
-        restaurant = Restaurant.query.filter_by(name=form.name.data).first()
-        if restaurant and restaurant.check_password(form.password.data):
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        password = request.form.get("password", "").strip()
+
+        restaurant = Restaurant.query.filter_by(name=name).first()
+        if restaurant and restaurant.check_password(password):
             login_user(restaurant)
             flash("Inicio de sesión exitoso.", "success")
-            return redirect(url_for("main.dashboard"))
+            return redirect(url_for(DASHBOARD_ROUTE))
         else:
             flash("Nombre o contraseña incorrectos.", "danger")
-    return render_template("login.html", form=form)
+
+    return render_template("login.html")
 
 
 @bp.route("/register", methods=["GET", "POST"])
@@ -56,16 +65,16 @@ def register():
 
         if not all([name, password, schedule, location, description, file]):
             flash("Todos los campos son obligatorios (incluyendo la imagen).", "danger")
-            return redirect(url_for("main.register"))
+            return redirect(url_for(REGISTER_ROUTE))
 
         existing_restaurant = Restaurant.query.filter_by(name=name).first()
         if existing_restaurant:
             flash("Ese nombre de restaurante ya está registrado. Intenta con otro.", "danger")
-            return redirect(url_for("main.register"))
+            return redirect(url_for(REGISTER_ROUTE))
 
         if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$', password):
             flash("La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula y un número.", "danger")
-            return redirect(url_for("main.register"))
+            return redirect(url_for(REGISTER_ROUTE))
 
         image_url = upload_image_to_supabase(file, folder="restaurants")
 
@@ -81,8 +90,8 @@ def register():
         db.session.add(new_restaurant)
         db.session.commit()
 
-        flash("Restaurante registrado con éxito ✅", "success")
-        return redirect(url_for("main.index"))
+        flash("Restaurante registrado con éxito ", "success")
+        return redirect(url_for(INDEX_ROUTE))
 
     return render_template("register.html")
 
@@ -102,7 +111,7 @@ def add_category():
         db.session.add(category)
         db.session.commit()
         flash("Categoría agregada correctamente.", "success")
-    return redirect(url_for("main.dashboard"))
+    return redirect(url_for(DASHBOARD_ROUTE))
 
 
 @bp.route("/add_item/<string:category_id>", methods=["GET", "POST"])
@@ -128,7 +137,7 @@ def add_item(category_id):
         db.session.commit()
 
         flash("Plato agregado con éxito", "success")
-        return redirect(url_for("main.dashboard"))
+        return redirect(url_for(DASHBOARD_ROUTE))
 
     return render_template("add_item.html", category_id=category_id)
 
@@ -140,15 +149,15 @@ def edit_category(category_id):
 
     if category.restaurant_id != current_user.id:
         flash("No tienes permiso para editar esta categoría.", "danger")
-        return redirect(url_for("main.dashboard"))
+        return redirect(url_for(DASHBOARD_ROUTE))
 
     new_name = request.form.get("category")
     if new_name:
         category.category = new_name
         db.session.commit()
-        flash("Categoría actualizada correctamente ✅", "success")
+        flash("Categoría actualizada correctamente ", "success")
 
-    return redirect(url_for("main.dashboard"))
+    return redirect(url_for(DASHBOARD_ROUTE))
 
 
 @bp.route("/delete_category/<string:category_id>", methods=["POST"])
@@ -158,13 +167,13 @@ def delete_category(category_id):
 
     if category.restaurant_id != current_user.id:
         flash("No tienes permiso para eliminar esta categoría.", "danger")
-        return redirect(url_for("main.dashboard"))
+        return redirect(url_for(DASHBOARD_ROUTE))
 
     db.session.delete(category)
     db.session.commit()
     flash("Categoría eliminada correctamente 🗑️", "success")
 
-    return redirect(url_for("main.dashboard"))
+    return redirect(url_for(DASHBOARD_ROUTE))
 
 
 @bp.route("/edit_item/<string:item_id>", methods=["POST"])
@@ -174,7 +183,7 @@ def edit_item(item_id):
 
     if item.category.restaurant_id != current_user.id:
         flash("No tienes permiso para editar este platillo.", "danger")
-        return redirect(url_for("main.dashboard"))
+        return redirect(url_for(DASHBOARD_ROUTE))
 
     item.name = request.form.get("name")
     item.price = request.form.get("price")
@@ -185,8 +194,8 @@ def edit_item(item_id):
         item.image = upload_image_to_supabase(file, folder="menu_items")
 
     db.session.commit()
-    flash("Platillo actualizado correctamente ✅", "success")
-    return redirect(url_for("main.dashboard"))
+    flash("Platillo actualizado correctamente ", "success")
+    return redirect(url_for(DASHBOARD_ROUTE))
 
 
 @bp.route("/delete_item/<string:item_id>", methods=["POST"])
@@ -196,13 +205,13 @@ def delete_item(item_id):
 
     if item.category.restaurant_id != current_user.id:
         flash("No tienes permiso para eliminar este platillo.", "danger")
-        return redirect(url_for("main.dashboard"))
+        return redirect(url_for(DASHBOARD_ROUTE))
 
     db.session.delete(item)
     db.session.commit()
     flash("Platillo eliminado correctamente 🗑️", "success")
 
-    return redirect(url_for("main.dashboard"))
+    return redirect(url_for(DASHBOARD_ROUTE))
 
 
 @bp.route("/logout")
@@ -210,4 +219,4 @@ def delete_item(item_id):
 def logout():
     logout_user()
     flash("Sesión cerrada.", "info")
-    return redirect(url_for("main.index"))
+    return redirect(url_for(INDEX_ROUTE))

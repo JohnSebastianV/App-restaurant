@@ -3,13 +3,11 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
-from flask_wtf import CSRFProtect
 from dotenv import load_dotenv
 
 db = SQLAlchemy()
 login_manager = LoginManager()
 migrate = Migrate()
-csrf = CSRFProtect()
 
 def create_app():
     load_dotenv()
@@ -33,9 +31,7 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
-    csrf.init_app(app)  # ✅ Activa CSRF en toda la app
-
-    login_manager.login_view = "main.login"  
+    login_manager.login_view = "main.login"
     login_manager.login_message_category = "info"
 
     from .routes import bp as main_bp

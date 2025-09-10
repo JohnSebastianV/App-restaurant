@@ -1,11 +1,18 @@
 {% extends "base.html" %}
 {% block title %}Login{% endblock %}
 {% block content %}
-<h2>Iniciar Sesión</h2>
-<form method="POST">
-  {{ form.hidden_tag() }}
-  <p>{{ form.name.label }} {{ form.name() }}</p>
-  <p>{{ form.password.label }} {{ form.password() }}</p>
-  <p>{{ form.submit() }}</p>
-</form>
+<div class="container">
+  <h2>Iniciar Sesión</h2>
+  <form method="POST">
+    <div>
+      <label for="name">Nombre del restaurante</label>
+      <input type="text" id="name" name="name" required>
+    </div>
+    <div>
+      <label for="password">Contraseña</label>
+      <input type="password" id="password" name="password" required>
+    </div>
+    <button type="submit">Ingresar</button>
+  </form>
+</div>
 {% endblock %}
