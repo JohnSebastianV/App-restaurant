@@ -19,6 +19,9 @@ __pycache__/
 # Archivos de IDE / sistema
 .vscode/
 .idea/
+.scannerwork/
+.sonarlint/
+.pytest_cache/
 *.swp
 *.swo
 .DS_Store

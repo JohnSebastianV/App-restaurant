@@ -8,14 +8,30 @@ from .models import db, Restaurant, Category, MenuItem
 
 bp = Blueprint("main", __name__, template_folder="../templates")
 
-@bp.route("/")
+# Página inicial -> muestra login si no hay sesión
+@bp.route("/", methods=["GET", "POST"])
 def index():
     if current_user.is_authenticated:
         return redirect(url_for("main.dashboard"))
-    return redirect(url_for("main.login"))
+
+    form = LoginForm()
+    if form.validate_on_submit():
+        restaurant = Restaurant.query.filter_by(name=form.name.data).first()
+        if restaurant and restaurant.check_password(form.password.data):
+            login_user(restaurant)
+            flash("Inicio de sesión exitoso.", "success")
+            return redirect(url_for("main.dashboard"))
+        else:
+            flash("Nombre o contraseña incorrectos.", "danger")
+
+    return render_template("login.html", form=form)
+
 
 @bp.route("/login", methods=["GET", "POST"])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("main.dashboard"))
+
     form = LoginForm()
     if form.validate_on_submit():
         restaurant = Restaurant.query.filter_by(name=form.name.data).first()
@@ -26,6 +42,7 @@ def login():
         else:
             flash("Nombre o contraseña incorrectos.", "danger")
     return render_template("login.html", form=form)
+
 
 @bp.route("/register", methods=["GET", "POST"])
 def register():
@@ -46,7 +63,6 @@ def register():
             flash("Ese nombre de restaurante ya está registrado. Intenta con otro.", "danger")
             return redirect(url_for("main.register"))
 
-        import re
         if not re.match(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$', password):
             flash("La contraseña debe tener al menos 8 caracteres, incluyendo una mayúscula, una minúscula y un número.", "danger")
             return redirect(url_for("main.register"))
@@ -66,17 +82,16 @@ def register():
         db.session.commit()
 
         flash("Restaurante registrado con éxito ✅", "success")
-        return redirect(url_for("main.login"))
+        return redirect(url_for("main.index"))
 
     return render_template("register.html")
-
-
 
 
 @bp.route("/dashboard")
 @login_required
 def dashboard():
     return render_template("dashboard.html", restaurant=current_user)
+
 
 @bp.route("/add_category", methods=["POST"])
 @login_required
@@ -117,7 +132,7 @@ def add_item(category_id):
 
     return render_template("add_item.html", category_id=category_id)
 
-# Editar categoría
+
 @bp.route("/edit_category/<string:category_id>", methods=["POST"])
 @login_required
 def edit_category(category_id):
@@ -136,7 +151,6 @@ def edit_category(category_id):
     return redirect(url_for("main.dashboard"))
 
 
-# Eliminar categoría
 @bp.route("/delete_category/<string:category_id>", methods=["POST"])
 @login_required
 def delete_category(category_id):
@@ -152,7 +166,7 @@ def delete_category(category_id):
 
     return redirect(url_for("main.dashboard"))
 
-# Editar platillo
+
 @bp.route("/edit_item/<string:item_id>", methods=["POST"])
 @login_required
 def edit_item(item_id):
@@ -166,7 +180,6 @@ def edit_item(item_id):
     item.price = request.form.get("price")
     item.description = request.form.get("description")
 
-    # Imagen opcional
     file = request.files.get("image")
     if file:
         item.image = upload_image_to_supabase(file, folder="menu_items")
@@ -176,7 +189,6 @@ def edit_item(item_id):
     return redirect(url_for("main.dashboard"))
 
 
-# Eliminar platillo
 @bp.route("/delete_item/<string:item_id>", methods=["POST"])
 @login_required
 def delete_item(item_id):
@@ -198,4 +210,4 @@ def delete_item(item_id):
 def logout():
     logout_user()
     flash("Sesión cerrada.", "info")
-    return redirect(url_for("main.login"))
+    return redirect(url_for("main.index"))

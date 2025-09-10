@@ -1,17 +1,17 @@
 body {
   font-family: Arial, sans-serif;
-  background: #f4f4f4;
+  background: #f00505;
   margin: 0;
   padding: 0;
 }
 
 nav {
-  background: #333;
+  background: #e40101;
   padding: 10px;
 }
 
 nav a {
-  color: #fff;
+  color: #f70505;
   margin-right: 15px;
   text-decoration: none;
 }
@@ -21,7 +21,7 @@ h2 {
 }
 
 form {
-  background: #fff;
+  background: #f80606;
   padding: 15px;
   border-radius: 8px;
   max-width: 400px;
@@ -37,7 +37,7 @@ form {
 }
 
 .category-box {
-  background: #fff;
+  background: #e40000;
   margin: 15px 0;
   padding: 10px;
   border-radius: 6px;
