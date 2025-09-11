@@ -6,6 +6,7 @@ from app.utils import upload_image_to_supabase
 from .models import db, Restaurant, Category, MenuItem
 
 bp = Blueprint("main", __name__, template_folder="../templates")
+#cambio
 
 DASHBOARD_ROUTE = "main.dashboard"
 LOGIN_ROUTE = "main.login"
