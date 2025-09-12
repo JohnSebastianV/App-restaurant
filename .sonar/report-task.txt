@@ -1,6 +1,6 @@
-projectKey=Restaurants
+projectKey=App-restaurant
 serverUrl=http://localhost:9000
 serverVersion=25.9.0.112764
-dashboardUrl=http://localhost:9000/dashboard?id=Restaurants
-ceTaskId=92233a48-2683-4951-9870-d984b9b1b250
-ceTaskUrl=http://localhost:9000/api/ce/task?id=92233a48-2683-4951-9870-d984b9b1b250
+dashboardUrl=http://localhost:9000/dashboard?id=App-restaurant
+ceTaskId=5a30cfd9-e9f8-49f4-9a28-7cdac919abc0
+ceTaskUrl=http://localhost:9000/api/ce/task?id=5a30cfd9-e9f8-49f4-9a28-7cdac919abc0
