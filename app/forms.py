@@ -14,3 +14,4 @@ class LoginForm(FlaskForm):
     name = StringField("Nombre del restaurante", validators=[DataRequired()])
     password = PasswordField("Contraseña", validators=[DataRequired()])
     submit = SubmitField("Iniciar Sesión")
+# -----------------------
